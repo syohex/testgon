@@ -135,7 +135,7 @@ func typeSuffix(typeName string) string {
 func signedMaxValue(typeName string, bitWidth int) string {
 	suffix := typeSuffix(typeName)
 	width := float64(bitWidth)
-	return fmt.Sprintf("%g%s", math.Pow(2, (width-1))-1, suffix)
+	return fmt.Sprintf("%.0f%s", math.Pow(2, (width-1))-1, suffix)
 }
 
 func signedMinValue(typeName string, bitWidth int, complement int) string {
@@ -143,9 +143,9 @@ func signedMinValue(typeName string, bitWidth int, complement int) string {
 
 	width := float64(bitWidth)
 	if complement == 2 {
-		return fmt.Sprintf("%g%s", -math.Pow(2, (width-1)), suffix)
+		return fmt.Sprintf("%.0f%s", -math.Pow(2, (width-1)), suffix)
 	} else {
-		return fmt.Sprintf("%g%s", -math.Pow(2, (width-1))+1, suffix)
+		return fmt.Sprintf("%.0f%s", -math.Pow(2, (width-1))+1, suffix)
 	}
 }
 
