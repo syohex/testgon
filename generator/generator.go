@@ -1,41 +1,42 @@
 package generator
 
 import (
+	"errors"
+	"fmt"
+	"math"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+
 	"github.com/syohex/testgon/config"
 	"github.com/syohex/testgon/template/macro"
-	"errors"
-	"path/filepath"
-	"fmt"
-	"regexp"
-	"os"
-	"strings"
-	"math"
 )
 
 type Param struct {
-	File string
-	Help bool
-	IntOnly bool
+	File      string
+	Help      bool
+	IntOnly   bool
 	FloatOnly bool
 }
 
 type Generator struct {
-	Config *config.Config
-	Help bool
-	IntOnly bool
+	Config    *config.Config
+	Help      bool
+	IntOnly   bool
 	FloatOnly bool
 }
 
-func New(param Param) (*Generator, error){
+func New(param Param) (*Generator, error) {
 	conf, err := config.Parse(param.File)
 	if err != nil {
 		return nil, err
 	}
 
 	generator := &Generator{
-		Config: conf,
-		Help: param.Help,
-		IntOnly: param.IntOnly,
+		Config:    conf,
+		Help:      param.Help,
+		IntOnly:   param.IntOnly,
 		FloatOnly: param.FloatOnly,
 	}
 
@@ -68,19 +69,19 @@ func checkTemplateFileName(templates []string) error {
 	return nil
 }
 
-func (generator *Generator)generateTestSuite(templates []string) error {
+func (generator *Generator) generateTestSuite(templates []string) error {
 	if err := os.Mkdir(generator.Config.TestDir, 0755); err != nil {
 		return err
 	}
 
-//	for _, template := range templates {
-//		// generate template file
-//	}
+	//	for _, template := range templates {
+	//		// generate template file
+	//	}
 
 	return nil
 }
 
-func (generator *Generator)Run(patterns []string) error {
+func (generator *Generator) Run(patterns []string) error {
 	if patterns == nil {
 		return errors.New("Templete files are not specified")
 	}
@@ -132,26 +133,26 @@ func typeSuffix(typeName string) string {
 }
 
 func signedMaxValue(typeName string, bitWidth int) string {
-	suffix := typeSuffix(typeName);
+	suffix := typeSuffix(typeName)
 	width := float64(bitWidth)
-	return fmt.Sprintf("%g%s", math.Pow(2, (width - 1)) - 1, suffix)
+	return fmt.Sprintf("%g%s", math.Pow(2, (width-1))-1, suffix)
 }
 
 func signedMinValue(typeName string, bitWidth int, complement int) string {
-	suffix := typeSuffix(typeName);
+	suffix := typeSuffix(typeName)
 
 	width := float64(bitWidth)
 	if complement == 2 {
-		return fmt.Sprintf("%g%s", -math.Pow(2, (width - 1)), suffix)
+		return fmt.Sprintf("%g%s", -math.Pow(2, (width-1)), suffix)
 	} else {
-		return fmt.Sprintf("%g%s", -math.Pow(2 , (width - 1)) + 1, suffix)
+		return fmt.Sprintf("%g%s", -math.Pow(2, (width-1))+1, suffix)
 	}
 }
 
 func unsignedMaxValue(typeName string, bitWidth int) string {
-	suffix := typeSuffix(typeName);
+	suffix := typeSuffix(typeName)
 	width := float64(bitWidth)
-	return fmt.Sprintf("%g%s", math.Pow(2, width) - 1, suffix)
+	return fmt.Sprintf("%g%s", math.Pow(2, width)-1, suffix)
 }
 
 // use Enum type instead of bool type ???
