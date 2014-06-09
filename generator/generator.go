@@ -153,17 +153,26 @@ func unsignedMaxValue(typeName string, bitWidth int) string {
 	return fmt.Sprintf("%g%s", math.Pow(2, width)-1, suffix)
 }
 
-// use Enum type instead of bool type ???
-func macroTypeName(typeName string, unsigned bool, min bool) string {
+const (
+	SIGNED_TYPE   = 0
+	UNSIGNED_TYPE = 1
+)
+
+const (
+	MIN_VALUE = 0
+	MAX_VALUE = 1
+)
+
+func macroTypeName(typeName string, signed int, min int) string {
 	var unsignedPrefix string
-	if unsigned {
+	if signed == UNSIGNED_TYPE {
 		unsignedPrefix = "U"
 	} else {
 		unsignedPrefix = ""
 	}
 
 	var suffix string
-	if min {
+	if min == MIN_VALUE {
 		suffix = "MIN"
 	} else {
 		suffix = "MAX"
@@ -179,10 +188,10 @@ func (generator *Generator) registerTypeMacros(typeName string, bitWidth int) {
 	signedMax := signedMaxValue(typeName, bitWidth)
 	unsignedMax := unsignedMaxValue(typeName, bitWidth)
 
-	signedMinName := macroTypeName(typeName, false, true)
-	signedMaxName := macroTypeName(typeName, false, false)
-	unsignedMinName := macroTypeName(typeName, true, true)
-	unsignedMaxName := macroTypeName(typeName, true, false)
+	signedMinName := macroTypeName(typeName, SIGNED_TYPE, MIN_VALUE)
+	signedMaxName := macroTypeName(typeName, SIGNED_TYPE, MAX_VALUE)
+	unsignedMinName := macroTypeName(typeName, UNSIGNED_TYPE, MIN_VALUE)
+	unsignedMaxName := macroTypeName(typeName, UNSIGNED_TYPE, MAX_VALUE)
 
 	generator.GlobalEnv[signedMinName] = &macro.Macro{Name: signedMinName, Body: signedMin}
 	generator.GlobalEnv[signedMaxName] = &macro.Macro{Name: signedMinName, Body: signedMax}
