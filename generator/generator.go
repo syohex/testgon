@@ -104,8 +104,6 @@ func (generator *Generator) Run(patterns []string) error {
 	return nil
 }
 
-var spaceRe = regexp.MustCompile(`\s+`)
-
 func setPredefinedMacros(conf config.Config) map[string]*macro.Macro {
 	predefined := make(map[string]*macro.Macro)
 	registerTypeMacros(predefined, "char", conf.Size.Char, conf.Complement)
