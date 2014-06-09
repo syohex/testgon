@@ -4,12 +4,6 @@ import (
 	"testing"
 )
 
-func TestConstructor(t *testing.T) {
-	if _, err := New("", "", nil); err == nil {
-		t.Errorf("'name' argument should not be '0'")
-	}
-}
-
 func TestIgnoreExpression(t *testing.T) {
 	if ok := isIgnoredExpression(`$Id`); !ok {
 		t.Errorf("'$Id' should be ignorede")
@@ -17,14 +11,14 @@ func TestIgnoreExpression(t *testing.T) {
 }
 
 func TestWrongArgumentLength(t *testing.T) {
-	m, _ := New("foo", "bar", []string{"a", "b"})
+	m := &Macro{Name: "foo", Body: "bar", DummyArgs: []string{"a", "b"}}
 	if _, err := m.Evaluate([]string{"c"}, nil); err == nil {
 		t.Error("wrong argument length")
 	}
 }
 
 func TestEvaluate(t *testing.T) {
-	m, _ := New("foo", `Hello $name`, []string{"$name"})
+	m := &Macro{Name: "foo", Body: `Hello $name`, DummyArgs: []string{"$name"}}
 	val, err := m.Evaluate([]string{"John"}, nil)
 	if err != nil {
 		t.Error(err)
@@ -34,7 +28,8 @@ func TestEvaluate(t *testing.T) {
 		t.Error("failed macro expantion")
 	}
 
-	m, _ = New("foo", "I'm $name\nI'm from $country", []string{"$name", "$country"})
+	m = &Macro{Name: "foo", Body: "I'm $name\nI'm from $country",
+		DummyArgs: []string{"$name", "$country"}}
 	val, err = m.Evaluate([]string{"Tom", "Canada"}, nil)
 	if err != nil {
 		t.Error(err)
@@ -46,9 +41,9 @@ func TestEvaluate(t *testing.T) {
 }
 
 func TestEvaluateWithEnv(t *testing.T) {
-	m, _ := New("foo", `Hello $name`, nil)
+	m := &Macro{Name: "foo", Body: `Hello $name`}
 	env := make(map[string]*Macro)
-	env["$name"], _ = New("bar", "John", nil)
+	env["$name"] = &Macro{Name: "bar", Body: "John"}
 
 	val, err := m.Evaluate(nil, env)
 	if err != nil {
@@ -61,9 +56,10 @@ func TestEvaluateWithEnv(t *testing.T) {
 }
 
 func TestEvaluateWithFunctionEnv(t *testing.T) {
-	m, _ := New("foo", `Hello $print("John", "Smith")`, nil)
+	m := &Macro{Name: "foo", Body: `Hello $print("John", "Smith")`}
 	env := make(map[string]*Macro)
-	env["$print"], _ = New("bar", "printf($family, $last)", []string{"$family", "$last"})
+	env["$print"] = &Macro{Name: "bar", Body: "printf($family, $last)",
+		DummyArgs: []string{"$family", "$last"}}
 
 	val, err := m.Evaluate(nil, env)
 	if err != nil {

@@ -1,24 +1,15 @@
 package macro
 
 import (
-	"errors"
 	"regexp"
 	"fmt"
 	"strings"
 )
 
 type Macro struct {
-	name string
-	body string
-	dummyArgs []string
-}
-
-func New(name string, body string, dummyArgs []string) (*Macro, error) {
-	if name == "" {
-		return nil, errors.New("mandatory paramter 'name' should not be empty")
-	}
-
-	return &Macro{name: name, body: body, dummyArgs: dummyArgs}, nil
+	Name string
+	Body string
+	DummyArgs []string
 }
 
 var ignored_expressions = []string{"$Id"}
@@ -50,24 +41,24 @@ func removeAllSpaces(arg string) string {
 
 func (macro *Macro)Evaluate(args []string, env map[string]*Macro) (string, error) {
 
-	if len(macro.dummyArgs) != len(args) {
+	if len(macro.DummyArgs) != len(args) {
 		err := fmt.Errorf("[%s]argument length is not be matched(expected=%d, got=%d)",
-			macro.name, len(macro.dummyArgs), len(args))
+			macro.Name, len(macro.DummyArgs), len(args))
 		return "", err
 	}
 
 	bindings := make(map[string]string)
 	for i, arg := range args {
-		dummy := macro.dummyArgs[i]
+		dummy := macro.DummyArgs[i]
 		bindings[dummy] = arg;
 	}
 
-	matcheds := macroExpressionRegexp.FindAllStringSubmatch(macro.body, -1)
+	matcheds := macroExpressionRegexp.FindAllStringSubmatch(macro.Body, -1)
 	if len(matcheds) == 0 {
 		return "", nil
 	}
 
-	retval := macro.body
+	retval := macro.Body
 	for _, matched := range matcheds {
 		name := matched[1]
 
@@ -84,8 +75,8 @@ func (macro *Macro)Evaluate(args []string, env map[string]*Macro) (string, error
 			}
 
 			var err error
-			if len(val.dummyArgs) == 0 {
-				expanded = val.body
+			if len(val.DummyArgs) == 0 {
+				expanded = val.Body
 			} else {
 				expanded, err = val.Evaluate(args, env)
 				if err != nil {
