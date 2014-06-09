@@ -25,6 +25,7 @@ type Generator struct {
 	Help      bool
 	IntOnly   bool
 	FloatOnly bool
+	GlobalEnv map[string]*macro.Macro
 }
 
 func New(param Param) (*Generator, error) {
@@ -95,7 +96,7 @@ func (generator *Generator) Run(patterns []string) error {
 		return err
 	}
 
-	// TODO set macros
+	generator.setPredefinedMacros()
 
 	if err := generator.generateTestSuite(templates); err != nil {
 		return err
@@ -104,15 +105,14 @@ func (generator *Generator) Run(patterns []string) error {
 	return nil
 }
 
-func setPredefinedMacros(conf config.Config) map[string]*macro.Macro {
-	predefined := make(map[string]*macro.Macro)
-	registerTypeMacros(predefined, "char", conf.Size.Char, conf.Complement)
-	registerTypeMacros(predefined, "short", conf.Size.Short, conf.Complement)
-	registerTypeMacros(predefined, "int", conf.Size.Int, conf.Complement)
-	registerTypeMacros(predefined, "long", conf.Size.Long, conf.Complement)
-	// should implement pointer type and 'float' and 'double'
+func (generator *Generator) setPredefinedMacros() {
+	size := generator.Config.Size
 
-	return predefined
+	generator.registerTypeMacros("char", size.Char)
+	generator.registerTypeMacros("short", size.Short)
+	generator.registerTypeMacros("int", size.Int)
+	generator.registerTypeMacros("long", size.Long)
+	// should implement pointer type and 'float' and 'double'
 }
 
 func typeSuffix(typeName string) string {
@@ -172,12 +172,9 @@ func macroTypeName(typeName string, unsigned bool, min bool) string {
 	return fmt.Sprintf("%s%s%s", unsignedPrefix, strings.ToUpper(typeName), suffix)
 }
 
-func registerTypeMacros(
-	predefined map[string]*macro.Macro,
-	typeName string,
-	bitWidth int,
-	complement int,
-) {
+func (generator *Generator) registerTypeMacros(typeName string, bitWidth int) {
+	complement := generator.Config.Complement
+
 	signedMin := signedMinValue(typeName, bitWidth, complement)
 	signedMax := signedMaxValue(typeName, bitWidth)
 	unsignedMax := unsignedMaxValue(typeName, bitWidth)
@@ -187,8 +184,8 @@ func registerTypeMacros(
 	unsignedMinName := macroTypeName(typeName, true, true)
 	unsignedMaxName := macroTypeName(typeName, true, false)
 
-	predefined[signedMinName] = &macro.Macro{Name: signedMinName, Body: signedMin}
-	predefined[signedMaxName] = &macro.Macro{Name: signedMinName, Body: signedMax}
-	predefined[unsignedMinName] = &macro.Macro{Name: signedMinName, Body: "0"}
-	predefined[unsignedMaxName] = &macro.Macro{Name: signedMinName, Body: unsignedMax}
+	generator.GlobalEnv[signedMinName] = &macro.Macro{Name: signedMinName, Body: signedMin}
+	generator.GlobalEnv[signedMaxName] = &macro.Macro{Name: signedMinName, Body: signedMax}
+	generator.GlobalEnv[unsignedMinName] = &macro.Macro{Name: signedMinName, Body: "0"}
+	generator.GlobalEnv[unsignedMaxName] = &macro.Macro{Name: signedMinName, Body: unsignedMax}
 }
