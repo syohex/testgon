@@ -8,23 +8,24 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	"github.com/syohex/testgon/template/macro"
+	"path/filepath"
 )
 
-type Param struct {
-	Macros       []string
-	IncludePaths []string
-}
-
 type Parser struct {
-	Param
+	IncludePaths     []string
+	predefined       map[string]*macro.Macro
 	filenameIndex    int
 	templateEncoding string
 	outputEncoding   string
 	outputDirectory  string
 }
 
-func New(param Param) *Parser {
+func New(outputDir string, predefined map[string]*macro.Macro) *Parser {
 	parser := &Parser{
+		outputDirectory:  outputDir,
+		predefined:       predefined,
 		filenameIndex:    0,
 		templateEncoding: "utf-8",
 		outputEncoding:   "utf-8",
@@ -121,7 +122,7 @@ func (parser *Parser) parseTemplate(template io.Reader) error {
 
 		section := matched[1]
 		argument := matched[2]
-		callback:= dispatchTable[section]
+		callback := dispatchTable[section]
 
 		endRegexp, err := regexp.Compile(`^` + section + `_`)
 		if err != nil {
@@ -147,6 +148,13 @@ func (parser *Parser) parseTemplate(template io.Reader) error {
 }
 
 func (parser Parser) Parse(template string) error {
+	// Set directory in template file as default include path
+	abs, err := filepath.Abs( filepath.Dir(template) )
+	if err != nil {
+		return err
+	}
+	parser.IncludePaths = append(parser.IncludePaths, abs)
+
 	file, err := os.Open(template)
 	if err != nil {
 		return err
@@ -158,5 +166,8 @@ func (parser Parser) Parse(template string) error {
 	}
 
 	parser.parseTemplate(file)
+
+	// clean up default include path
+	parser.IncludePaths = parser.IncludePaths[:len(parser.IncludePaths)-1]
 	return nil
 }
