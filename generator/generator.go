@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/syohex/testgon/config"
+	"github.com/syohex/testgon/template"
 	"github.com/syohex/testgon/template/macro"
 )
 
@@ -25,7 +26,6 @@ type Generator struct {
 	Help      bool
 	IntOnly   bool
 	FloatOnly bool
-	GlobalEnv map[string]*macro.Macro
 }
 
 func New(param Param) (*Generator, error) {
@@ -71,13 +71,19 @@ func checkTemplateFileName(templates []string) error {
 }
 
 func (generator *Generator) generateTestSuite(templates []string) error {
-	if err := os.Mkdir(generator.Config.TestDir, 0755); err != nil {
+	env := generator.setPredefinedMacros()
+
+	outputDir := generator.Config.TestDir
+	if err := os.Mkdir(outputDir, 0755); err != nil {
 		return err
 	}
 
-	//	for _, template := range templates {
-	//		// generate template file
-	//	}
+	parser := template.NewParser(outputDir, env)
+	for _, template := range templates {
+		if err := parser.Parse(template); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
@@ -96,8 +102,6 @@ func (generator *Generator) Run(patterns []string) error {
 		return err
 	}
 
-	generator.setPredefinedMacros()
-
 	if err := generator.generateTestSuite(templates); err != nil {
 		return err
 	}
@@ -105,14 +109,18 @@ func (generator *Generator) Run(patterns []string) error {
 	return nil
 }
 
-func (generator *Generator) setPredefinedMacros() {
+func (generator *Generator) setPredefinedMacros() map[string]*macro.Macro {
 	size := generator.Config.Size
+	complement := generator.Config.Complement
 
-	generator.registerTypeMacros("char", size.Char)
-	generator.registerTypeMacros("short", size.Short)
-	generator.registerTypeMacros("int", size.Int)
-	generator.registerTypeMacros("long", size.Long)
+	env := make(map[string]*macro.Macro)
+	registerIntTypeMacro(env, "char", size.Char, complement)
+	registerIntTypeMacro(env, "short", size.Short, complement)
+	registerIntTypeMacro(env, "int", size.Int, complement)
+	registerIntTypeMacro(env, "long", size.Long, complement)
 	// should implement pointer type and 'float' and 'double'
+
+	return env
 }
 
 func typeSuffix(typeName string) string {
@@ -181,9 +189,12 @@ func macroTypeName(typeName string, signed int, min int) string {
 	return fmt.Sprintf("%s%s%s", unsignedPrefix, strings.ToUpper(typeName), suffix)
 }
 
-func (generator *Generator) registerTypeMacros(typeName string, bitWidth int) {
-	complement := generator.Config.Complement
-
+func registerIntTypeMacro(
+	env map[string]*macro.Macro,
+	typeName string,
+	bitWidth int,
+	complement int,
+) {
 	signedMin := signedMinValue(typeName, bitWidth, complement)
 	signedMax := signedMaxValue(typeName, bitWidth)
 	unsignedMax := unsignedMaxValue(typeName, bitWidth)
@@ -193,8 +204,8 @@ func (generator *Generator) registerTypeMacros(typeName string, bitWidth int) {
 	unsignedMinName := macroTypeName(typeName, UNSIGNED_TYPE, MIN_VALUE)
 	unsignedMaxName := macroTypeName(typeName, UNSIGNED_TYPE, MAX_VALUE)
 
-	generator.GlobalEnv[signedMinName] = &macro.Macro{Name: signedMinName, Body: signedMin}
-	generator.GlobalEnv[signedMaxName] = &macro.Macro{Name: signedMinName, Body: signedMax}
-	generator.GlobalEnv[unsignedMinName] = &macro.Macro{Name: signedMinName, Body: "0"}
-	generator.GlobalEnv[unsignedMaxName] = &macro.Macro{Name: signedMinName, Body: unsignedMax}
+	env[signedMinName] = &macro.Macro{Name: signedMinName, Body: signedMin}
+	env[signedMaxName] = &macro.Macro{Name: signedMinName, Body: signedMax}
+	env[unsignedMinName] = &macro.Macro{Name: signedMinName, Body: "0"}
+	env[unsignedMaxName] = &macro.Macro{Name: signedMinName, Body: unsignedMax}
 }
