@@ -45,7 +45,7 @@ func TestUnSignedMaxValue(t *testing.T) {
 	}
 
 	unsignedIntMin := unsignedMaxValue(`int`, 32)
-	if unsignedIntMin != "4294967297" {
-		t.Errorf(`Expected: "4294967297" but got %s`, unsignedIntMin)
+	if unsignedIntMin != "4294967295" {
+		t.Errorf(`Expected: "4294967295" but got %s`, unsignedIntMin)
 	}
 }
