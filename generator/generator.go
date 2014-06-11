@@ -158,7 +158,7 @@ func signedMinValue(typeName string, bitWidth int, complement int) string {
 func unsignedMaxValue(typeName string, bitWidth int) string {
 	suffix := typeSuffix(typeName)
 	width := float64(bitWidth)
-	return fmt.Sprintf("%g%s", math.Pow(2, width)-1, suffix)
+	return fmt.Sprintf("%.0f%s", math.Pow(2, width)-1, suffix)
 }
 
 const (
