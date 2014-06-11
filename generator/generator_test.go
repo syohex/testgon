@@ -32,3 +32,20 @@ func TestSignedMinValue(t *testing.T) {
 		t.Errorf(`Expected: "128" but got %s`, signedLongLongMin)
 	}
 }
+
+func TestUnSignedMaxValue(t *testing.T) {
+	unsignedCharMin := unsignedMaxValue(`char`, 8)
+	if unsignedCharMin != "255" {
+		t.Errorf(`Expected: "255" but got %s`, unsignedCharMin)
+	}
+
+	unsignedLongMin := unsignedMaxValue(`long`, 16)
+	if unsignedLongMin != "65535L" {
+		t.Errorf(`Expected: "65535L" but got %s`, unsignedLongMin)
+	}
+
+	unsignedIntMin := unsignedMaxValue(`int`, 32)
+	if unsignedIntMin != "4294967297" {
+		t.Errorf(`Expected: "4294967297" but got %s`, unsignedIntMin)
+	}
+}
