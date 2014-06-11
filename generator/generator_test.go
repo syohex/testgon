@@ -24,7 +24,7 @@ func TestSignedMinValue(t *testing.T) {
 
 	signedShortMin2 := signedMinValue(`short`, 16, 1)
 	if signedShortMin2 != "-32767" {
-		t.Errorf(`Expected: "3-2767" but got %s`, signedShortMin2)
+		t.Errorf(`Expected: "-32767" but got %s`, signedShortMin2)
 	}
 
 	signedLongLongMin := signedMinValue(`long long`, 8, 2)
