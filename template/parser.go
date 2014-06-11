@@ -165,7 +165,9 @@ func (parser Parser) Parse(template string) error {
 		return err
 	}
 
-	parser.parseTemplate(file)
+	if err := parser.parseTemplate(file); err != nil {
+		return err
+	}
 
 	// clean up default include path
 	parser.IncludePaths = parser.IncludePaths[:len(parser.IncludePaths)-1]
