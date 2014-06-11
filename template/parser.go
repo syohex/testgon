@@ -22,7 +22,7 @@ type Parser struct {
 	outputDirectory  string
 }
 
-func New(outputDir string, predefined map[string]*macro.Macro) *Parser {
+func NewParser(outputDir string, predefined map[string]*macro.Macro) *Parser {
 	parser := &Parser{
 		outputDirectory:  outputDir,
 		predefined:       predefined,
