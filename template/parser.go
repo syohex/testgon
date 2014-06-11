@@ -9,8 +9,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/syohex/testgon/template/macro"
 	"path/filepath"
+
+	"github.com/syohex/testgon/template/macro"
 )
 
 type Parser struct {
@@ -149,7 +150,7 @@ func (parser *Parser) parseTemplate(template io.Reader) error {
 
 func (parser Parser) Parse(template string) error {
 	// Set directory in template file as default include path
-	abs, err := filepath.Abs( filepath.Dir(template) )
+	abs, err := filepath.Abs(filepath.Dir(template))
 	if err != nil {
 		return err
 	}
